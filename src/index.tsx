@@ -1,6 +1,7 @@
 import { Button, Frog, TextInput } from 'frog'
 import { devtools } from 'frog/dev'
 import { serveStatic } from 'frog/serve-static'
+import { isValidDuration, parseDurationToTimestamp } from '../lib/utils.js'
 
 // import { neynar } from 'frog/hubs'
 
@@ -53,10 +54,16 @@ app.frame('/', (c) => {
 // @ts-ignore
 app.frame("/submit", (c) => {
   const { inputText } = c
-  console.log(inputText);
+
   if (!inputText) return c.error({
     message: "Please input a time"
   })
+
+  if (!isValidDuration(inputText)) return c.error({
+    message: "Invalid duration format. Use format like '1d 12h 25m', '3h 30m', or '45m'"
+  })
+
+  const timestamp = parseDurationToTimestamp(inputText)
 
   return c.res({
     image: (
@@ -90,9 +97,8 @@ app.frame("/submit", (c) => {
       </div>
     ),
     intents: [
-      <TextInput placeholder="e.g. 1d 12h 25m" />,
       <Button value="share">Share</Button>,
-      <Button value="submit">Remind me</Button>,
+      <Button action="/">Go back</Button>,
     ],
   })
 })
