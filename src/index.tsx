@@ -4,6 +4,7 @@ import { serveStatic } from 'frog/serve-static'
 import { isValidDuration, parseDurationToTimestamp } from '../lib/utils.js'
 import { addReminder, startReminderService } from '../lib/db.js';
 import { neynar } from 'frog/middlewares'
+import { shareComposeUrl } from '../lib/constants.js';
 
 const neynarMiddleware = neynar({
   apiKey: process.env.NEYNAR_API_KEY!,
@@ -52,7 +53,7 @@ app.frame('/', (c) => {
     ),
     intents: [
       <TextInput placeholder="e.g. 1d 12h 25m" />,
-      <Button value="share">Share</Button>,
+      <Button.Link href={shareComposeUrl}>Share</Button.Link>,
       <Button action="/submit">Remind me</Button>,
     ],
   })
