@@ -1,5 +1,6 @@
 import { Button, Frog, TextInput } from 'frog'
 import { devtools } from 'frog/dev'
+import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { isValidDuration, parseDurationToTimestamp } from '../lib/utils.js'
 import { addReminder, startReminderService } from '../lib/db.js';
@@ -7,22 +8,40 @@ import { neynar as neynarHub } from 'frog/hubs'
 import { neynar } from 'frog/middlewares'
 import { shareComposeUrl } from '../lib/constants.js';
 
+
 const neynarMiddleware = neynar({
   apiKey: process.env.NEYNAR_API_KEY!,
   features: ['interactor', 'cast'],
 })
 
-type State = {
-  timestamp: number | null
-}
-
 export const app = new Frog({
+  assetsPath: '/',
+  basePath: '/api',
   hub: neynarHub({ apiKey: process.env.NEYNAR_API_KEY! }),
   title: "Cast Reminder Bot",
   verify: "silent",
   initialState: {
     timestamp: null
-  }
+  },
+  imageOptions: {
+		fonts: [
+			{
+				name: "Inter",
+				weight: 500,
+				source: "google",
+			},
+			{
+				name: "Inter",
+				weight: 600,
+				source: "google",
+			},
+			{
+				name: "Inter",
+				weight: 700,
+				source: "google",
+			},
+		],
+	},
 })
 
 app.frame('/', (c) => {
@@ -38,7 +57,7 @@ app.frame('/', (c) => {
         color: "white",
         fontSize: 60,
       }}>
-        <span>Remind me of this cast in</span>
+        Set a reminder for this cast in
       </div>
     ),
     intents: [
@@ -62,7 +81,7 @@ app.frame("/confirm", async (c) => {
 
   const timestamp = parseDurationToTimestamp(inputText!)
 
-  const state = deriveState((previousState: any) => {
+  deriveState((previousState: any) => {
     previousState.timestamp = timestamp
   })
 
@@ -79,17 +98,22 @@ app.frame("/confirm", async (c) => {
     image: (
       <div style={{
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         width: "100%",
         height: "100%",
         backgroundColor: "black",
         color: "white",
-        fontSize: 60,
         padding: "10rem",
         textAlign: "center",
       }}>
-        @reminderbot will send you this cast on {dateString}
+        <div style={{ display: "flex",fontSize: 60 }}>
+          Confirm time: {dateString}
+        </div>
+        <div style={{ display: "flex", fontSize: 32, marginTop: "5rem" }}>
+          @reminderbot will send you this cast as a direct message
+        </div>
       </div>
     ),
     intents: [
@@ -149,14 +173,13 @@ app.frame("/submit", neynarMiddleware, async (c) => {
   })
 })
 
-app.use('/*', serveStatic({ root: './public' }))
-devtools(app, { serveStatic })
+// @ts-ignore
+const isEdgeFunction = typeof EdgeFunction !== 'undefined'
+const isProduction = isEdgeFunction || import.meta.env?.MODE !== 'development'
+devtools(app, isProduction ? { assetsPath: '/.frog' } : { serveStatic })
+
 startReminderService();
 
-if (typeof Bun !== 'undefined') {
-  Bun.serve({
-    fetch: app.fetch,
-    port: 3000,
-  })
-  console.log('Server is running on port 3000')
-}
+export const GET = handle(app)
+export const POST = handle(app)
+
