@@ -3,6 +3,12 @@ import { devtools } from 'frog/dev'
 import { serveStatic } from 'frog/serve-static'
 import { isValidDuration, parseDurationToTimestamp } from '../lib/utils.js'
 import { addReminder, startReminderService } from '../lib/db.js';
+import { neynar } from 'frog/middlewares'
+
+const neynarMiddleware = neynar({
+  apiKey: process.env.NEYNAR_API_KEY!,
+  features: ['interactor', 'cast'],
+})
 
 // import { neynar } from 'frog/hubs'
 
@@ -17,15 +23,15 @@ app.frame('/', (c) => {
     image: (
       <div
         style={{
-          alignItems: 'center',
-          backgroundSize: '100% 100%',
           display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           flexDirection: 'column',
           flexWrap: 'nowrap',
-          height: '100%',
-          justifyContent: 'center',
-          textAlign: 'center',
           width: '100%',
+          height: '100%',
+          backgroundColor: 'black',
+          position: 'relative'
         }}
       >
         <div
@@ -40,7 +46,7 @@ app.frame('/', (c) => {
             whiteSpace: 'pre-wrap',
           }}
         >
-          Remind me of this cast
+          Remind me of this cast in
         </div>
       </div>
     ),
@@ -53,7 +59,7 @@ app.frame('/', (c) => {
 })
 
 // @ts-ignore
-app.frame("/submit", async (c) => {
+app.frame("/submit", neynarMiddleware, async (c) => {
   const { inputText, frameData } = c
 
   if (!inputText) return c.error({
@@ -68,8 +74,9 @@ app.frame("/submit", async (c) => {
 
   // Store the reminder in Postgres
   await addReminder(
-    frameData!.castId.toString(),
+    frameData!.castId.hash,
     frameData!.fid.toString(),
+    c.var.cast?.author.username!,
     timestamp
   )
 
@@ -77,15 +84,15 @@ app.frame("/submit", async (c) => {
     image: (
       <div
         style={{
-          alignItems: 'center',
-          backgroundSize: '100% 100%',
           display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           flexDirection: 'column',
           flexWrap: 'nowrap',
-          height: '100%',
-          justifyContent: 'center',
-          textAlign: 'center',
           width: '100%',
+          height: '100%',
+          backgroundColor: 'black',
+          position: 'relative'
         }}
       >
         <div
@@ -100,7 +107,8 @@ app.frame("/submit", async (c) => {
             whiteSpace: 'pre-wrap',
           }}
         >
-          Good job
+          {/* Set reminder for {new Date(timestamp * 1000).toLocaleString()}! */}
+          Success!
         </div>
       </div>
     ),
@@ -113,9 +121,9 @@ app.frame("/submit", async (c) => {
 
 app.use('/*', serveStatic({ root: './public' }))
 devtools(app, { serveStatic })
+startReminderService();
 
 if (typeof Bun !== 'undefined') {
-  startReminderService();
   Bun.serve({
     fetch: app.fetch,
     port: 3000,
