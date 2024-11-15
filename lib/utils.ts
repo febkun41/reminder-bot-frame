@@ -21,9 +21,9 @@ export const isValidDuration = (durationStr: string): boolean => {
 };
 
 export const parseDurationToTimestamp = (durationStr: string): number => {
-    if (!isValidDuration(durationStr)) {
-        throw new Error("Invalid duration format. Use format like '1d 12h 25m', '3h 30m', or '45m'");
-    }
+    // if (!isValidDuration(durationStr)) {
+    //     throw new Error("Invalid duration format. Use format like '1d 12h 25m', '3h 30m', or '45m'");
+    // }
 
     // Regular expression to capture time components
     const pattern = /^(?:(\d+)d\s*)?(?:(\d+)h\s*)?(?:(\d+)m\s*)?$/;
