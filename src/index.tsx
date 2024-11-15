@@ -3,6 +3,7 @@ import { devtools } from 'frog/dev'
 import { serveStatic } from 'frog/serve-static'
 import { isValidDuration, parseDurationToTimestamp } from '../lib/utils.js'
 import { addReminder, startReminderService } from '../lib/db.js';
+import { neynar as neynarHub } from 'frog/hubs'
 import { neynar } from 'frog/middlewares'
 import { shareComposeUrl } from '../lib/constants.js';
 
@@ -11,57 +12,45 @@ const neynarMiddleware = neynar({
   features: ['interactor', 'cast'],
 })
 
-// import { neynar } from 'frog/hubs'
+type State = {
+  timestamp: number | null
+}
 
 export const app = new Frog({
-  // Supply a Hub to enable frame verification.
-  // hub: neynar({ apiKey: 'NEYNAR_FROG_FM' }),
-  title: 'Frog Frame',
+  hub: neynarHub({ apiKey: process.env.NEYNAR_API_KEY! }),
+  title: "Cast Reminder Bot",
+  verify: "silent",
+  initialState: {
+    timestamp: null
+  }
 })
 
 app.frame('/', (c) => {
   return c.res({
     image: (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          flexWrap: 'nowrap',
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'black',
-          position: 'relative'
-        }}
-      >
-        <div
-          style={{
-            color: 'white',
-            fontSize: 60,
-            fontStyle: 'normal',
-            letterSpacing: '-0.025em',
-            lineHeight: 1.4,
-            marginTop: 30,
-            padding: '0 120px',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
-          Remind me of this cast in
-        </div>
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "black",
+        color: "white",
+        fontSize: 60,
+      }}>
+        <span>Remind me of this cast in</span>
       </div>
     ),
     intents: [
       <TextInput placeholder="e.g. 1d 12h 25m" />,
       <Button.Link href={shareComposeUrl}>Share</Button.Link>,
-      <Button action="/submit">Remind me</Button>,
+      <Button action="/confirm">Submit</Button>,
     ],
   })
 })
 
-// @ts-ignore
-app.frame("/submit", neynarMiddleware, async (c) => {
-  const { inputText, frameData } = c
+app.frame("/confirm", async (c) => {
+  const { inputText, deriveState } = c
 
   if (!inputText) return c.error({
     message: "Please input a time"
@@ -71,14 +60,55 @@ app.frame("/submit", neynarMiddleware, async (c) => {
     message: "Invalid duration format. Use format like '1d 12h 25m', '3h 30m', or '45m'"
   })
 
-  const timestamp = parseDurationToTimestamp(inputText)
+  const timestamp = parseDurationToTimestamp(inputText!)
+
+  const state = deriveState((previousState: any) => {
+    previousState.timestamp = timestamp
+  })
+
+  const dateString = new Date(timestamp * 1000).toLocaleString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false
+  });
+
+  return c.res({
+    image: (
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+        backgroundColor: "black",
+        color: "white",
+        fontSize: 60,
+        padding: "10rem",
+        textAlign: "center",
+      }}>
+        @reminderbot will send you this cast on {dateString}
+      </div>
+    ),
+    intents: [
+      <Button action="/">Go back</Button>,
+      <Button action="/submit">Confirm</Button>,
+    ],
+  })
+})
+
+// @ts-ignore
+app.frame("/submit", neynarMiddleware, async (c) => {
+  const { frameData, previousState }: any = c
 
   // Store the reminder in Postgres
   await addReminder(
     frameData!.castId.hash,
     frameData!.fid.toString(),
     c.var.cast?.author.username!,
-    timestamp
+    previousState?.timestamp
   )
 
   return c.res({
@@ -108,13 +138,12 @@ app.frame("/submit", neynarMiddleware, async (c) => {
             whiteSpace: 'pre-wrap',
           }}
         >
-          {/* Set reminder for {new Date(timestamp * 1000).toLocaleString()}! */}
           Success!
         </div>
       </div>
     ),
     intents: [
-      <Button value="share">Share</Button>,
+      <Button.Link href={shareComposeUrl}>Share</Button.Link>,
       <Button action="/">Go back</Button>,
     ],
   })
