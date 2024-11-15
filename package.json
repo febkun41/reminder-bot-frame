@@ -3,10 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "frog vercel-build",
     "dev": "frog dev",
-    "serve": "bun run src/index.tsx",
-    "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy"
+    "deploy": "vercel"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -15,8 +14,8 @@
     "uuid": "^11.0.3"
   },
   "devDependencies": {
-    "@types/bun": "latest",
-    "bun": "latest",
-    "prisma": "^5.22.0"
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "vercel": "^39.0.2"
   }
 }
