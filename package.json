@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "frog dev",
-    "serve": "bun run src/index.tsx"
+    "serve": "bun run src/index.tsx",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
