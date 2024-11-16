@@ -1,9 +1,10 @@
 {
-  "name": "remind-me-frame",
+  "name": "reminder-bot",
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "prisma db push && prisma generate && frog vercel-build",
+    "build": "prisma generate && frog vercel-build",
+    "postinstall": "prisma generate",
     "dev": "frog dev",
     "deploy": "vercel"
   },
