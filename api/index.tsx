@@ -178,7 +178,7 @@ const isEdgeFunction = typeof EdgeFunction !== 'undefined'
 const isProduction = isEdgeFunction || import.meta.env?.MODE !== 'development'
 devtools(app, isProduction ? { assetsPath: '/.frog' } : { serveStatic })
 
-// startReminderService();
+startReminderService();
 
 export const GET = handle(app)
 export const POST = handle(app)
