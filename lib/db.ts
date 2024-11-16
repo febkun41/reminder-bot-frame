@@ -35,7 +35,7 @@ export const markReminderAsProcessed = async (id: number) => {
 	})
 }
 
-async function sendDirectMessage(castId: string, userFid: string, authorUsername: string) {
+export const sendDirectMessage = async (castId: string, userFid: string, authorUsername: string) => {
 	try {
 		const response = await fetch('https://api.warpcast.com/v2/ext-send-direct-cast', {
 			method: 'PUT',
@@ -58,22 +58,22 @@ async function sendDirectMessage(castId: string, userFid: string, authorUsername
 	}
 }
 
-export async function startReminderService() {
-	console.log('Starting reminder service...');
+// export async function startReminderService() {
+// 	console.log('Starting reminder service...');
 
-	// Check for due reminders every minute
-	setInterval(async () => {
-		console.log("Checking for pending reminders...")
-		try {
-			const pendingReminders = await getPendingReminders();
+// 	// Check for due reminders every minute
+// 	setInterval(async () => {
+// 		console.log("Checking for pending reminders...")
+// 		try {
+// 			const pendingReminders = await getPendingReminders();
 
-			for (const reminder of pendingReminders) {
-				await sendDirectMessage(reminder.castId, reminder.userFid, reminder.authorUsername);
-				await markReminderAsProcessed(reminder.id);
-				console.log(`Processed reminder ${reminder.id} for cast ${reminder.castId}`);
-			}
-		} catch (error) {
-			console.error('Error processing reminders:', error);
-		}
-	}, 60000); // 60000ms = 1 minute
-}
+// 			for (const reminder of pendingReminders) {
+// 				await sendDirectMessage(reminder.castId, reminder.userFid, reminder.authorUsername);
+// 				await markReminderAsProcessed(reminder.id);
+// 				console.log(`Processed reminder ${reminder.id} for cast ${reminder.castId}`);
+// 			}
+// 		} catch (error) {
+// 			console.error('Error processing reminders:', error);
+// 		}
+// 	}, 60000); // 60000ms = 1 minute
+// }

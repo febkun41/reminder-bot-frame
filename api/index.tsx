@@ -3,7 +3,7 @@ import { devtools } from 'frog/dev'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { isValidDuration, parseDurationToTimestamp } from '../lib/utils.js'
-import { addReminder, startReminderService } from '../lib/db.js';
+import { addReminder } from '../lib/db.js';
 import { neynar as neynarHub } from 'frog/hubs'
 import { neynar } from 'frog/middlewares'
 import { shareComposeUrl } from '../lib/constants.js';
@@ -192,7 +192,7 @@ const isEdgeFunction = typeof EdgeFunction !== 'undefined'
 const isProduction = isEdgeFunction || import.meta.env?.MODE !== 'development'
 devtools(app, isProduction ? { assetsPath: '/.frog' } : { serveStatic })
 
-startReminderService();
+// startReminderService();
 
 export const GET = handle(app)
 export const POST = handle(app)
