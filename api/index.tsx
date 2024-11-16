@@ -8,7 +8,6 @@ import { neynar as neynarHub } from 'frog/hubs'
 import { neynar } from 'frog/middlewares'
 import { shareComposeUrl } from '../lib/constants.js';
 
-
 const neynarMiddleware = neynar({
   apiKey: process.env.NEYNAR_API_KEY!,
   features: ['interactor', 'cast'],
@@ -44,7 +43,22 @@ export const app = new Frog({
 	},
 })
 
-app.frame('/', (c) => {
+app.castAction(
+  '/',
+  (c) => {
+    return c.frame({
+      path: "/input"
+    })
+  },
+  { 
+    aboutUrl: '',
+    name: 'Reminder Bot',
+    description: 'Get reminded of a cast by @reminderbot in your DCs.',
+    icon: 'bell'
+  }
+) 
+
+app.frame('/input', (c) => {
   return c.res({
     image: (
       <div style={{
@@ -117,7 +131,7 @@ app.frame("/confirm", async (c) => {
       </div>
     ),
     intents: [
-      <Button action="/">Go back</Button>,
+      <Button action="/input">Go back</Button>,
       <Button action="/submit">Confirm</Button>,
     ],
   })
@@ -168,7 +182,7 @@ app.frame("/submit", neynarMiddleware, async (c) => {
     ),
     intents: [
       <Button.Link href={shareComposeUrl}>Share</Button.Link>,
-      <Button action="/">Go back</Button>,
+      <Button action="/input">Go back</Button>,
     ],
   })
 })
