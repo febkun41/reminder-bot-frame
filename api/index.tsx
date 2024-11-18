@@ -6,7 +6,7 @@ import { isValidDuration, parseDurationToTimestamp } from '../lib/utils.js'
 import { addReminder } from '../lib/db.js';
 import { neynar as neynarHub } from 'frog/hubs'
 import { neynar } from 'frog/middlewares'
-import { shareComposeUrl } from '../lib/constants.js';
+import { SHARE_URL } from '../lib/constants.js';
 
 const neynarMiddleware = neynar({
   apiKey: process.env.NEYNAR_API_KEY!,
@@ -23,23 +23,7 @@ export const app = new Frog({
     timestamp: null
   },
   imageOptions: {
-		fonts: [
-			{
-				name: "Inter",
-				weight: 500,
-				source: "google",
-			},
-			{
-				name: "Inter",
-				weight: 600,
-				source: "google",
-			},
-			{
-				name: "Inter",
-				weight: 700,
-				source: "google",
-			},
-		],
+		fonts: [{ name: "Inter", weight: 500, source: "google" }],
 	},
 })
 
@@ -58,17 +42,21 @@ app.castAction(
   }
 ) 
 
+const baseContainerStyle = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: "100%",
+  height: "100%",
+  backgroundColor: "black",
+  color: "white",
+}
+
 app.frame('/input', (c) => {
   return c.res({
     image: (
       <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        height: "100%",
-        backgroundColor: "black",
-        color: "white",
+        ...baseContainerStyle,
         fontSize: 60,
       }}>
         Set a reminder for this cast in
@@ -76,7 +64,7 @@ app.frame('/input', (c) => {
     ),
     intents: [
       <TextInput placeholder="e.g. 1d 12h 25m" />,
-      <Button.Link href={shareComposeUrl}>Share</Button.Link>,
+      <Button.Link href={SHARE_URL}>Share</Button.Link>,
       <Button action="/confirm">Submit</Button>,
     ],
   })
@@ -111,18 +99,12 @@ app.frame("/confirm", async (c) => {
   return c.res({
     image: (
       <div style={{
-        display: "flex",
+        ...baseContainerStyle,
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        height: "100%",
-        backgroundColor: "black",
-        color: "white",
         padding: "10rem",
         textAlign: "center",
       }}>
-        <div style={{ display: "flex",fontSize: 60 }}>
+        <div style={{ display: "flex", fontSize: 60 }}>
           Confirm time: {dateString} UTC
         </div>
         <div style={{ display: "flex", fontSize: 32, marginTop: "5rem" }}>
@@ -141,7 +123,6 @@ app.frame("/confirm", async (c) => {
 app.frame("/submit", neynarMiddleware, async (c) => {
   const { frameData, previousState }: any = c
 
-  // Store the reminder in Postgres
   await addReminder(
     frameData!.castId.hash,
     frameData!.fid.toString(),
@@ -151,37 +132,27 @@ app.frame("/submit", neynarMiddleware, async (c) => {
 
   return c.res({
     image: (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          flexWrap: 'nowrap',
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'black',
-          position: 'relative'
-        }}
-      >
-        <div
-          style={{
-            color: 'white',
-            fontSize: 60,
-            fontStyle: 'normal',
-            letterSpacing: '-0.025em',
-            lineHeight: 1.4,
-            marginTop: 30,
-            padding: '0 120px',
-            whiteSpace: 'pre-wrap',
-          }}
-        >
+      <div style={{
+        ...baseContainerStyle,
+        flexDirection: "column",
+        flexWrap: "nowrap",
+        position: "relative"
+      }}>
+        <div style={{
+          fontSize: 60,
+          fontStyle: "normal",
+          letterSpacing: "-0.025em",
+          lineHeight: 1.4,
+          marginTop: 30,
+          padding: "0 120px",
+          whiteSpace: "pre-wrap",
+        }}>
           Success!
         </div>
       </div>
     ),
     intents: [
-      <Button.Link href={shareComposeUrl}>Share</Button.Link>,
+      <Button.Link href={SHARE_URL}>Share</Button.Link>,
       <Button action="/input">Go back</Button>,
     ],
   })
@@ -192,7 +163,6 @@ const isEdgeFunction = typeof EdgeFunction !== 'undefined'
 const isProduction = isEdgeFunction || import.meta.env?.MODE !== 'development'
 devtools(app, isProduction ? { assetsPath: '/.frog' } : { serveStatic })
 
-// startReminderService();
 
 export const GET = handle(app)
 export const POST = handle(app)

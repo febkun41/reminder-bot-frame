@@ -1,1 +1,1 @@
-export const shareComposeUrl = "https://warpcast.com/~/compose?text=Check%20out%20this%20Cast%20Action%20to%20set%20reminders%20for%20any%20cast%20in%20DCs!%0A%0ABuilt%20by%20@benbassler.eth&embeds[]=https://warpcast.com/~/add-cast-action?url=http%3A%2F%2Ftip.masks-tip.wtf%3A9000"
+export const SHARE_URL = "https://warpcast.com/~/compose?text=Check%20out%20this%20Cast%20Action%20to%20set%20reminders%20for%20any%20cast%20in%20DCs!%0A%0ABuilt%20by%20@benbassler.eth&embeds[]=https://warpcast.com/~/add-cast-action?url=http%3A%2F%2Ftip.masks-tip.wtf%3A9000"
