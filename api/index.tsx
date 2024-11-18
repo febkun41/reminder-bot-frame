@@ -17,7 +17,7 @@ export const app = new Frog({
   assetsPath: '/',
   basePath: '/api',
   hub: neynarHub({ apiKey: process.env.NEYNAR_API_KEY! }),
-  title: "Cast Reminder Bot",
+  title: "Reminder Bot",
   verify: "silent",
   initialState: {
     timestamp: null
@@ -51,9 +51,9 @@ app.castAction(
     })
   },
   { 
-    aboutUrl: '',
+    aboutUrl: 'https://warpcast.com/reminderbot',
     name: 'Reminder Bot',
-    description: 'Get reminded of a cast by @reminderbot in your DCs.',
+    description: 'Set up reminders for any cast as direct messages from @reminderbot.',
     icon: 'bell'
   }
 ) 
@@ -126,7 +126,7 @@ app.frame("/confirm", async (c) => {
           Confirm time: {dateString} UTC
         </div>
         <div style={{ display: "flex", fontSize: 32, marginTop: "5rem" }}>
-          @reminderbot will send you this cast as a direct message
+          @reminderbot will send you this cast as a direct message.
         </div>
       </div>
     ),
