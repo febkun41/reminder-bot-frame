@@ -123,7 +123,7 @@ app.frame("/confirm", async (c) => {
         textAlign: "center",
       }}>
         <div style={{ display: "flex",fontSize: 60 }}>
-          Confirm time: {dateString}
+          Confirm time: {dateString} UTC
         </div>
         <div style={{ display: "flex", fontSize: 32, marginTop: "5rem" }}>
           @reminderbot will send you this cast as a direct message
